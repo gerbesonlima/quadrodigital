@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadro de Anúncios</title>
+    
+    <!-- CONFIGURAÇÕES DO PWA (Web App) -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#2a5298">
+    <link rel="apple-touch-icon" href="icone-192.png">
+
+    <style>
+        :root {
+            --primary-color: #2a5298;
+            --secondary-color: #1e3c72;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --accent-color: #e8f0fe;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --event-color: #6f42c1;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* --- ESTILOS DO APLICATIVO (BANNER DE INSTALAÇÃO) --- */
+        #install-container {
+            display: none; /* Escondido por padrão */
+            width: 100%;
+            max-width: 800px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        #btn-install {
+            background-color: #ffc107;
+            color: #333;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        #btn-install:active {
+            transform: scale(0.95);
+        }
+
+        #installed-success {
+            display: none; /* Escondido por padrão */
+            width: 100%;
+            max-width: 800px;
+            background-color: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            box-sizing: border-box;
+        }
+
+        /* --- RESTANTE DO SEU CSS ORIGINAL --- */
+        #banner-trimestral { display: none; width: 100%; max-width: 800px; background-color: #fff3cd; border-left: 5px solid var(--warning-color); color: #856404; padding: 15px; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.05); animation: pulse 2s infinite; box-sizing: border-box; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.01); } 100% { transform: scale(1); } }
+        .table-container { width: 100%; max-width: 800px; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        caption { padding: 20px; font-size: 1.4rem; font-weight: bold; background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)); color: white; text-transform: uppercase; }
+        th { padding: 15px; text-align: left; background-color: #f8f9fa; color: #666; font-size: 0.8rem; border-bottom: 2px solid #eee; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        .highlight-row { background-color: var(--accent-color); border-left: 5px solid var(--primary-color); font-weight: 600; }
+        .extra-row { display: none; }
+        .badge-trimestral, .badge-event { color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; margin-top: 5px; display: inline-block; text-transform: uppercase; }
+        .badge-trimestral { background-color: var(--danger-color); }
+        .badge-event { background-color: var(--event-color); }
+        .btn-expand { width: 100%; padding: 15px; border: none; background: #fff; color: var(--primary-color); font-weight: bold; cursor: pointer; border-top: 1px dashed #ccc; }
+        
+        @media screen and (max-width: 600px) {
+            thead { display: none; }
+            tr { display: block; border-bottom: 2px solid #eee; }
+            td { display: block; text-align: right; padding-left: 50%; position: relative; }
+            td::before { content: attr(data-label); position: absolute; left: 15px; font-weight: bold; color: var(--primary-color); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CAIXA DE INSTALAÇÃO DO APP -->
+    <div id="install-container">
+        <h3 style="margin: 0 0 5px 0;">Tenha o quadro sempre à mão!</h3>
+        <p style="margin: 0; font-size: 0.9rem;">Instale o aplicativo oficial para acesso rápido e sem precisar digitar o endereço.</p>
+        <button id="btn-install">📲 Instalar App Quadro de Anúncios</button>
+    </div>
+
+    <!-- CAIXA DE SUCESSO (Aparece após instalar) -->
+    <div id="installed-success">
+        ✅ App instalado! Feche o navegador e abra pelo ícone na tela inicial do seu celular.
+    </div>
+
+    <div id="banner-trimestral">
+        <span style="font-size: 1.5rem;">⚠️</span>
+        <div>
+            ATENÇÃO: Estamos em mês de Limpeza Trimestral! <br>
+            <span style="font-size: 0.85rem; font-weight: normal;">Verifique com o dirigente o dia e horário do mutirão geral.</span>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <caption>Programação de Limpeza</caption>
+            <thead>
+                <tr><th>Semana</th><th>Grupo</th><th>Dirigente</th></tr>
+            </thead>
+            <tbody id="corpo-limpeza"></tbody>
+        </table>
+        <button class="btn-expand" onclick="toggleRows('limpeza', this)"><span>▼ Ver programação completa</span></button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <caption>Saídas de Campo</caption>
+            <thead>
+                <tr><th>Dia</th><th>Local</th><th>Dirigente</th></tr>
+            </thead>
+            <tbody id="corpo-campo"></tbody>
+        </table>
+        <button class="btn-expand" onclick="toggleRows('campo', this)"><span>▼ Ver todos os dias</span></button>
+    </div>
+
+    <!-- SCRIPT DAS TABELAS -->
+    <script>
+        const dirigentesLimpeza = ["Otacilio Gomes / Robson", "Gerbeson", "Faustino", "Nathaniel / Jose Lopes", "Nonato Nery", "Cicero"];
+        const mesesTrimestrais = [2, 5, 8, 11]; 
+        const listaEventos = {
+            "2026-05-04": "Visita do Superintendente",
+            "2026-05-18": "Congresso",
+            "2026-06-01": "Limpeza Trimestral", 
+            "2026-06-22": "Manutenção do Ar"
+        };
+
+        function gerarLimpeza() {
+            const tbody = document.getElementById('corpo-limpeza');
+            const banner = document.getElementById('banner-trimestral');
+            let hoje = new Date();
+            let diaSemanHoje = hoje.getDay();
+            let diffHoje = hoje.getDate() - diaSemanHoje + (diaSemanHoje === 0 ? -6 : 1);
+            let segundaAtual = new Date(hoje.getFullYear(), hoje.getMonth(), diffHoje);
+            const dataRef = new Date(2026, 3, 20); 
+
+            if (mesesTrimestrais.includes(hoje.getMonth())) banner.style.display = 'flex';
+
+            for (let i = 0; i < 6; i++) {
+                let dataInicio = new Date(segundaAtual);
+                dataInicio.setDate(segundaAtual.getDate() + (i * 7));
+                let dataFim = new Date(dataInicio);
+                dataFim.setDate(dataInicio.getDate() + 6);
+                
+                let ano = dataInicio.getFullYear();
+                let mes = String(dataInicio.getMonth() + 1).padStart(2, '0');
+                let dia = String(dataInicio.getDate()).padStart(2, '0');
+                let dataChave = `${ano}-${mes}-${dia}`;
+
+                let mesTexto = dataFim.toLocaleDateString('pt-BR', { month: 'long' });
+                let dataFormatada = `${dataInicio.getDate()} - ${dataFim.getDate()} de ${mesTexto}`;
+                let diffSemanas = Math.round((dataInicio - dataRef) / (7 * 24 * 60 * 60 * 1000));
+                let indiceGrupo = ((diffSemanas % 6) + 6) % 6;
+
+                let tr = document.createElement('tr');
+                if (i === 0) tr.classList.add('highlight-row');
+                else tr.classList.add('extra-row', 'limpeza-extra');
+
+                let seloTexto = "";
+                if (listaEventos[dataChave]) seloTexto = `<br><span class="badge-event">📅 ${listaEventos[dataChave]}</span>`;
+                else if (mesesTrimestrais.includes(dataInicio.getMonth())) seloTexto = `<br><span class="badge-trimestral">✨ Limpeza Trimestral</span>`;
+
+                tr.innerHTML = `<td data-label="Semana">${dataFormatada}${seloTexto}</td><td data-label="Grupo">${(indiceGrupo + 1).toString().padStart(2, '0')}</td><td data-label="Dirigente">${dirigentesLimpeza[indiceGrupo]}</td>`;
+                tbody.appendChild(tr);
+            }
+        }
+
+        function gerarCampo() {
+            const tbody = document.getElementById('corpo-campo');
+            const dadosCampo = [
+                { dia: "Terça-feira", local: "Fernando", dir: "Nonato Nery", id: 2 },
+                { dia: "Quarta-Feira", local: "Salão do Reino", dir: "—", id: 3 },
+                { dia: "Quinta-Feira", local: "Robson", dir: "—", id: 4 },
+                { dia: "Sexta-Feira", local: "Jose Lopes", dir: "Jose Lopes", id: 5 },
+                { dia: "Sábado", local: "Salão do Reino", dir: "—", id: 6 },
+                { dia: "Domingo", local: "Grupos", dir: "Dirigentes", id: 0 }
+            ];
+            const diaAtual = new Date().getDay();
+            dadosCampo.forEach(item => {
+                let tr = document.createElement('tr');
+                if (item.id === diaAtual) tr.classList.add('highlight-row');
+                else tr.classList.add('extra-row', 'campo-extra');
+                tr.innerHTML = `<td data-label="Dia">${item.dia}</td><td data-label="Local">${item.local}</td><td data-label="Dirigente">${item.dir}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleRows(tipo, btn) {
+            const linhas = document.querySelectorAll(`.${tipo}-extra`);
+            const span = btn.querySelector('span');
+            let visivel = false;
+            linhas.forEach(row => {
+                if (row.style.display === 'block' || row.style.display === 'table-row') {
+                    row.style.display = 'none';
+                } else {
+                    row.style.display = window.innerWidth > 600 ? 'table-row' : 'block';
+                    visivel = true;
+                }
+            });
+            if (tipo === 'limpeza') span.innerText = visivel ? "▲ Mostrar menos" : "▼ Ver programação completa";
+            else span.innerText = visivel ? "▲ Mostrar apenas hoje" : "▼ Ver todos os dias";
+        }
+    </script>
+
+    <!-- SCRIPT DE INSTALAÇÃO DO APLICATIVO (PWA) -->
+    <script>
+        // 1. Registra o Service Worker (necessário para funcionar offline e instalar)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .catch(err => console.log('Erro no SW:', err));
+            });
+        }
+
+        // 2. Lógica do Botão de Instalação
+        let deferredPrompt;
+        const installContainer = document.getElementById('install-container');
+        const btnInstall = document.getElementById('btn-install');
+        const installedSuccess = document.getElementById('installed-success');
+
+        // Verifica se já está usando como Aplicativo
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+            // Já está no App, não mostra banner
+            installContainer.style.display = 'none';
+        } else {
+            // O navegador avisou que o app PODE ser instalado
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault(); // Impede o balão padrão do Google
+                deferredPrompt = e; // Guarda o evento
+                installContainer.style.display = 'block'; // Mostra nosso banner azul
+            });
+
+            // Quando o usuário clica no nosso botão
+            btnInstall.addEventListener('click', async () => {
+                installContainer.style.display = 'none'; // Esconde o banner
+                deferredPrompt.prompt(); // Mostra o pop-up nativo do celular
+                
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('App instalado!');
+                }
+                deferredPrompt = null;
+            });
+
+            // Quando a instalação é concluída com sucesso
+            window.addEventListener('appinstalled', () => {
+                installContainer.style.display = 'none';
+                installedSuccess.style.display = 'block'; // Mostra a mensagem verde
+            });
+        }
+
+        window.onload = () => { 
+            gerarLimpeza(); 
+            gerarCampo(); 
+        };
+    </script>
+</body>
+</html>
