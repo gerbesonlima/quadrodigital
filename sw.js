@@ -1,51 +1,57 @@
-// Altere a versão toda vez que fizer grandes mudanças no código para forçar a atualização
-const CACHE_NAME = 'quadro-v3'; 
+// 1. REGRA DE OURO: Toda vez que você alterar o index.html, 
+// você DEVE mudar este número (ex: quadro-v8, quadro-v9...)
+const CACHE_NAME = 'quadro-v7'; 
 
-// Lista de arquivos que serão salvos no celular para funcionar offline
 const urlsToCache = [
-  '/quadrodigital/',
   '/quadrodigital/index.html',
-  '/quadrodigital/manifest.json',
-  '/quadrodigital/icone-192.png',
-  '/quadrodigital/icone-512.png'
+  '/quadrodigital/manifest.json'
 ];
 
-// EVENTO DE INSTALAÇÃO: Baixa e salva os arquivos no cache
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      console.log('Cache aberto com sucesso');
-      return cache.addAll(urlsToCache);
+      return Promise.all(
+        urlsToCache.map(url => {
+          return cache.add(url).catch(error => console.warn('Falha no cache:', url));
+        })
+      );
     })
   );
-  // Força o Service Worker a se ativar imediatamente
+  // Força o celular a instalar a atualização imediatamente
   self.skipWaiting(); 
 });
 
-// EVENTO DE ATIVAÇÃO: Limpa os caches antigos se a versão mudar
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Limpando cache antigo:', cacheName);
+            console.log('Apagando versão antiga:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
-  // Assume o controle de todas as páginas abertas imediatamente
   self.clients.claim();
 });
 
-// EVENTO DE FETCH: Intercepta a internet para carregar rápido ou funcionar offline
+// 2. A MÁGICA DA ATUALIZAÇÃO (Network First)
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
-      // Se encontrou no cache, retorna o arquivo salvo. Senão, busca da internet.
-      return response || fetch(event.request);
-    })
+    // Tenta buscar a versão mais recente na internet primeiro
+    fetch(event.request)
+      .then(respostaInternet => {
+        // Se deu certo (tem internet), salva essa versão fresquinha no cache escondido
+        return caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, respostaInternet.clone());
+          return respostaInternet;
+        });
+      })
+      .catch(() => {
+        // Se falhou (celular está offline/sem internet), mostra o que está salvo
+        return caches.match(event.request);
+      })
   );
 });
