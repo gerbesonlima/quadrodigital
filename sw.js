@@ -1,6 +1,6 @@
 // 1. REGRA DE OURO: Toda vez que você alterar o index.html, 
 // você DEVE mudar este número (ex: quadro-v8, quadro-v9...)
-const CACHE_NAME = 'quadro-v8'; 
+const CACHE_NAME = 'quadro-v9'; 
 
 const urlsToCache = [
   '/quadrodigital/index.html',
