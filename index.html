@@ -141,15 +141,15 @@
     </div>
 
     <div class="table-container">
-        <table>
-            <caption>Saídas de Campo</caption>
-            <thead>
-                <tr><th>Dia</th><th>Local</th><th>Dirigente</th></tr>
-            </thead>
-            <tbody id="corpo-campo"></tbody>
-        </table>
-        <button class="btn-expand" onclick="toggleRows('campo', this)"><span>▼ Ver todos os dias</span></button>
-    </div>
+    <table>
+        <caption>Saídas de Campo</caption>
+        <thead>
+            <tr><th>Dia</th><th>Local</th><th>Horário</th><th>Dirigente</th></tr>
+        </thead>
+        <tbody id="corpo-campo"></tbody>
+    </table>
+    <button class="btn-expand" onclick="toggleRows('campo', this)"><span>▼ Ver todos os dias</span></button>
+</div>
 
     <!-- SCRIPT DAS TABELAS -->
     <script>
@@ -201,26 +201,40 @@
                 tbody.appendChild(tr);
             }
         }
+            function gerarCampo() {
+    const tbody = document.getElementById('corpo-campo');
+    const dadosCampo = [
+        { dia: "Terça-feira", local: "Fernando", hora: "08h00", dir: "Nonato Nery", id: 2 },
+        { dia: "Quarta-feira", local: "Salão do Reino", hora: "08h00", dir: "—", id: 3 },
+        { dia: "Quinta-feira", local: "Robson", hora: "08h00", dir: "—", id: 4 },
+        { dia: "Quinta-feira", local: "José Lopes", hora: "18h30", dir: "José Lopes", id: 4 },
+        { dia: "Sexta-feira", local: "José Lopes", hora: "08h00", dir: "José Lopes", id: 5 },
+        { dia: "Sexta-feira", local: "Salão do Reino", hora: "17h30", dir: "—", id: 5 },
+        { dia: "Sábado", local: "Salão do Reino", hora: "08h20", dir: "—", id: 6 },
+        { dia: "Domingo", local: "Grupos", hora: "08h20", dir: "Dirigentes", id: 0 }
+    ];
 
-        function gerarCampo() {
-            const tbody = document.getElementById('corpo-campo');
-            const dadosCampo = [
-                { dia: "Terça-feira", local: "Fernando", dir: "Nonato Nery", id: 2 },
-                { dia: "Quarta-Feira", local: "Salão do Reino", dir: "—", id: 3 },
-                { dia: "Quinta-Feira", local: "Robson", dir: "—", id: 4 },
-                { dia: "Sexta-Feira", local: "Jose Lopes", dir: "Jose Lopes", id: 5 },
-                { dia: "Sábado", local: "Salão do Reino", dir: "—", id: 6 },
-                { dia: "Domingo", local: "Grupos", dir: "Dirigentes", id: 0 }
-            ];
-            const diaAtual = new Date().getDay();
-            dadosCampo.forEach(item => {
-                let tr = document.createElement('tr');
-                if (item.id === diaAtual) tr.classList.add('highlight-row');
-                else tr.classList.add('extra-row', 'campo-extra');
-                tr.innerHTML = `<td data-label="Dia">${item.dia}</td><td data-label="Local">${item.local}</td><td data-label="Dirigente">${item.dir}</td>`;
-                tbody.appendChild(tr);
-            });
+    const diaAtual = new Date().getDay();
+    
+    dadosCampo.forEach(item => {
+        let tr = document.createElement('tr');
+        
+        // Destaca a linha se for o dia atual
+        if (item.id === diaAtual) {
+            tr.classList.add('highlight-row');
+        } else {
+            tr.classList.add('extra-row', 'campo-extra');
         }
+
+        tr.innerHTML = `
+            <td data-label="Dia">${item.dia}</td>
+            <td data-label="Local">${item.local}</td>
+            <td data-label="Horário">${item.hora}</td>
+            <td data-label="Dirigente">${item.dir}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
 
         function toggleRows(tipo, btn) {
             const linhas = document.querySelectorAll(`.${tipo}-extra`);
