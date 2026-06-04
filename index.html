@@ -308,6 +308,67 @@
                 eventsList.innerHTML = '<li class="empty-state">Erro ao carregar as atividades.</li>';
             }
         }
+
+        // ==========================================
+        // 6. LÓGICA DE INSTALAÇÃO DO PWA
+        // ==========================================
+        let deferredPrompt;
+        const installContainer = document.getElementById('install-container');
+        const btnInstall = document.getElementById('btn-install');
+        const successMsg = document.getElementById('installed-success');
+
+        // Escuta o evento que o navegador dispara quando o app está pronto para ser instalado
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Previne o prompt padrão do navegador de aparecer imediatamente
+            e.preventDefault();
+            // Guarda o evento para podermos acioná-lo no clique do botão
+            deferredPrompt = e;
+            // Mostra o seu banner de instalação
+            installContainer.style.display = 'block';
+        });
+
+        // O que acontece quando o usuário clica no botão "Instalar"
+        btnInstall.addEventListener('click', async () => {
+            if (deferredPrompt !== null) {
+                // Exibe a janela de confirmação de instalação do sistema
+                deferredPrompt.prompt();
+                
+                // Aguarda a resposta do usuário (Aceitou ou Recusou)
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('App instalado com sucesso!');
+                } else {
+                    console.log('Usuário cancelou a instalação.');
+                }
+                
+                // Limpa a variável (o prompt só pode ser usado uma vez)
+                deferredPrompt = null;
+                // Esconde o banner
+                installContainer.style.display = 'none';
+            }
+        });
+
+        // Evento disparado quando o app é de fato instalado no celular/PC
+        window.addEventListener('appinstalled', () => {
+            // Esconde o banner caso ainda esteja visível
+            installContainer.style.display = 'none';
+            // Mostra a sua caixa de sucesso
+            successMsg.style.display = 'block';
+            // Limpa o prompt
+            deferredPrompt = null;
+        });
+
+        // ==========================================
+        // 7. REGISTRO DO SERVICE WORKER (OBRIGATÓRIO PARA PWA)
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Ajuste o caminho '/quadrodigital/sw.js' conforme a estrutura das suas pastas
+                navigator.serviceWorker.register('/quadrodigital/sw.js')
+                    .then(reg => console.log('Service Worker registrado:', reg.scope))
+                    .catch(err => console.log('Erro no Service Worker:', err));
+            });
+        }
     </script>
     
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
